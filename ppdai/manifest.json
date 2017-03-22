@@ -1,0 +1,19 @@
+
+{
+	"name": "weidai",
+	"version": "1.0",
+	"manifest_version":2,
+	"description": "拍拍贷自动抢标外挂",
+	"browser_action": {
+		"default_icon": "icon.png"
+	},
+	"icons": {  
+        "48": "icon.png"  
+    },
+	"content_scripts": [
+	    {
+	      "matches": ["http://invest.ppdai.com/*"],
+	      "js": ["jquery.min.js","ppd.js"]
+	    }
+    ]
+}
