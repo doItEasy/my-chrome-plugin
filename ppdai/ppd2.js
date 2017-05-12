@@ -3,7 +3,7 @@ var arr = [];
 if(location.href.indexOf("listnew")!=-1){
 	localStorage.setItem("listingId", JSON.stringify(arr));
 	setInterval(function(){
-		var url ="http://invest.ppdai.com/loan/listnew?LoanCategoryId=4&CreditCodes=5%2C&ListTypes=&Rates=&Months=2%2C&AuthInfo=&BorrowCount=&didibid=&SortType=0&MinAmount=1500&MaxAmount=5500";
+		var url ="http://invest.ppdai.com/loan/listnew?LoanCategoryId=4&CreditCodes=5%2C&ListTypes=&Rates=&Months=4%2C&AuthInfo=&BorrowCount=&didibid=&SortType=0&MinAmount=2000&MaxAmount=6000";
 		$.get(url,function(data){
 		  	var parser = new DOMParser();
 		    var doc=parser.parseFromString(data, "text/html");
@@ -32,7 +32,25 @@ function excuct(doc,listingId){
 	info = "性别："+a1;
 	//年龄
 	var a2 = $(doc).find(".lender-info").find("p").eq(1).text().replace(/[^，0-9]/ig, "");
-	info =info+ ">>>>>>年龄："+a2+">>>>>>认证情况：";
+	info =info+ ">>>>>>年龄："+a2;
+
+
+	var balance = $(doc).find(".newLendDetailMoneyLeft").find("dd").eq(0).text().replace(/[^，0-9]/ig, ""); //本次借款金额
+
+	//统计信息
+	var d0 = $(doc).find(".lendDetailTab_tabContent").find(".tab-contain").eq(2).find(".num").eq(0).text().replace(/[^，0-9]/ig, "");//借款次数
+	var d1 = $(doc).find(".lendDetailTab_tabContent").find(".tab-contain").eq(2).find(".num").eq(5).text().replace(/[^，0-9]/ig, "");//0-15天逾期
+	var d2 = $(doc).find(".lendDetailTab_tabContent").find(".tab-contain").eq(2).find(".num").eq(6).text().replace(/[^，0-9]/ig, "");//15天以上逾期
+	var d3 = $(doc).find(".lendDetailTab_tabContent").find(".tab-contain").eq(2).find(".num").eq(7).text().replace(/[^，0-9]/ig, "");//历史借款总额
+	var d4 = $(doc).find(".lendDetailTab_tabContent").find(".tab-contain").eq(2).find(".num").eq(8).text().replace(/[^，0-9]/ig, "");//待还总额
+
+
+	info = info+">>>>>>借款金额:"+balance;
+	info = info+">>>>>>借款次数:"+d0;
+	info = info+">>>>>>逾期次数:"+d1+"和"+d2;
+	info = info+">>>>>>历史借款:"+d3/100;
+	info = info+">>>>>>历史待还:"+d4/100;
+	info = info+">>>>>>认证情况："
 
 	var c1 =false;	//人行认证
 	var c2 =false;	//学历认证
@@ -54,21 +72,7 @@ function excuct(doc,listingId){
 			c4 = true;
 		}
 	})
-	var balance = $(doc).find(".newLendDetailMoneyLeft").find("dd").eq(0).text().replace(/[^，0-9]/ig, "");
 
-	//统计信息
-	var d0 = $(doc).find(".lendDetailTab_tabContent").find(".tab-contain").eq(2).find(".num").eq(0).text().replace(/[^，0-9]/ig, "");//借款次数
-	var d1 = $(doc).find(".lendDetailTab_tabContent").find(".tab-contain").eq(2).find(".num").eq(5).text().replace(/[^，0-9]/ig, "");//0-15天逾期
-	var d2 = $(doc).find(".lendDetailTab_tabContent").find(".tab-contain").eq(2).find(".num").eq(6).text().replace(/[^，0-9]/ig, "");//15天以上逾期
-	var d3 = $(doc).find(".lendDetailTab_tabContent").find(".tab-contain").eq(2).find(".num").eq(7).text().replace(/[^，0-9]/ig, "");//历史借款总额
-	var d4 = $(doc).find(".lendDetailTab_tabContent").find(".tab-contain").eq(2).find(".num").eq(8).text().replace(/[^，0-9]/ig, "");//待还总额
-
-
-	info = info+">>>>>>借款金额:"+balance;
-	info = info+">>>>>>借款次数:"+d0;
-	info = info+">>>>>>逾期次数:"+d1+"和"+d2;
-	info = info+">>>>>>历史借款:"+d3/100;
-	info = info+">>>>>>历史待还:"+d4/100;
 	console.log(info);
 
 
@@ -78,14 +82,14 @@ function excuct(doc,listingId){
 	}
 	
 
-	var condition0 = d1==0&&d2==0; //逾期必须为0
-	var condition1 = d3<2800001; //历史借款总额
-	var condition2 = d4<700001 || (c1&&d4<950001) || (c2&&d4<800001)  || (c3&&d4<800001) || d3/d4>3; //待还总额
-	var condition3 = c1||c2||c3||c4 || (d4<420001) ; //人行或学历认证或户籍认证
-	var condition4 = sex||c1||(c2&&c3); //人行认证或女人
+	var condition0 = d1==0&&d2==0&&d0<10; //逾期必须为0和借款次数小于10
+	var condition1 = d3<3000001; //历史借款总额
+	var condition2 = d4<680001 || (c1&&d4<850001) || (c2&&d4<750001)  || (c3&&d4<750001) || d3/d4>3.5; //待还总额
+	var condition3 = c1||c2||c3||c4 || (d4<450001&&d4>0&&d0>1) ; //人行或学历认证或户籍认证
+	// var condition4 = sex||c1||(c2&&c3); //人行认证或女人
 	var condition5 = (a2>18&&a2<50)|| (c1&&a2<53) //年龄区间
-	var condition6 = (sex&&a2>21&&a2<36)||!sex; //女人的年龄区间
-	var condition7 = (d4/balance) < 300; //待还总额除本次借款金额
+	// var condition6 = (sex&&a2>21&&a2<36)||!sex; //女人的年龄区间
+	var condition7 = (d4/balance) < 250; //待还总额不能大于本次借款金额的3倍
 
 
 	if(condition0&&
