@@ -1,9 +1,9 @@
 var arr = [];
 
 if(location.href.indexOf("listnew")!=-1){
-	localStorage.setItem("listingId", JSON.stringify(arr));
+	// localStorage.setItem("listingId", JSON.stringify(arr));
 	setInterval(function(){
-		var url ="http://invest.ppdai.com/loan/listnew?LoanCategoryId=4&CreditCodes=5%2C&ListTypes=&Rates=&Months=4%2C&AuthInfo=&BorrowCount=&didibid=&SortType=0&MinAmount=2000&MaxAmount=6000";
+		var url ="http://invest.ppdai.com/loan/listnew?LoanCategoryId=4&CreditCodes=5%2C&ListTypes=&Rates=&Months=4%2C&AuthInfo=&BorrowCount=&didibid=&SortType=0&MinAmount=2000&MaxAmount=5600";
 		$.get(url,function(data){
 		  	var parser = new DOMParser();
 		    var doc=parser.parseFromString(data, "text/html");
@@ -82,10 +82,10 @@ function excuct(doc,listingId){
 	}
 	
 
-	var condition0 = d1==0&&d2==0&&d0<10; //逾期必须为0和借款次数小于10
+	var condition0 = d1==0&&d2==0&&d0<12; //逾期必须为0和借款次数小于10
 	var condition1 = d3<3000001; //历史借款总额
 	var condition2 = d4<680001 || (c1&&d4<850001) || (c2&&d4<750001)  || (c3&&d4<750001) || d3/d4>3.5; //待还总额
-	var condition3 = c1||c2||c3||c4 || (d4<450001&&d4>0&&d0>1) ; //人行或学历认证或户籍认证
+	var condition3 = c1||c2||c3||c4 || (d4<450001&&d4>0&&d0>0) ; //人行或学历认证或户籍认证
 	// var condition4 = sex||c1||(c2&&c3); //人行认证或女人
 	var condition5 = (a2>18&&a2<50)|| (c1&&a2<53) //年龄区间
 	// var condition6 = (sex&&a2>21&&a2<36)||!sex; //女人的年龄区间
