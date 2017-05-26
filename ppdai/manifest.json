@@ -13,7 +13,7 @@
 	"content_scripts": [
 	    {
 	      "matches": ["http://invest.ppdai.com/*"],
-	      "js": ["jquery.min.js","ppd2.js"]
+	      "js": ["jquery.min.js","ppd.js"]
 	    }
     ]
 }

@@ -1,14 +1,15 @@
 var arr = [];
 
 if(location.href.indexOf("listnew")!=-1){
-	// localStorage.setItem("listingId", JSON.stringify(arr));
+	var page = 1;
 	setInterval(function(){
-		var url ="http://invest.ppdai.com/loan/listnew?LoanCategoryId=4&CreditCodes=5%2C&ListTypes=&Rates=&Months=4%2C&AuthInfo=&BorrowCount=&didibid=&SortType=0&MinAmount=2000&MaxAmount=5600";
+		var url ="http://invest.ppdai.com/loan/listnew?LoanCategoryId=4&SortType=0&PageIndex="+page+"&CreditCodes=5%2C&Months=4%2C&MinAmount=2000&MaxAmount=6000";
+		// var url ="http://invest.ppdai.com/loan/listnew?LoanCategoryId=4&SortType=0&PageIndex="+page+"&CreditCodes=5%2C&Months=2%2C&MinAmount=2000&MaxAmount=5200";
 		$.get(url,function(data){
 		  	var parser = new DOMParser();
 		    var doc=parser.parseFromString(data, "text/html");
 
-			$(doc).find(".wapBorrowList ol:lt(4)").each(function(){
+			$(doc).find(".wapBorrowList ol:lt(10)").each(function(){
 		    	var href = $(this).find(".listtitle a").attr("href");
 		    	var id = href.split("=")[1];
 
@@ -20,7 +21,8 @@ if(location.href.indexOf("listnew")!=-1){
 			})
 
 		});
-	},6000);
+		page++;
+	},10000);
 
 }
 
@@ -29,7 +31,7 @@ function excuct(doc,listingId){
 	var info = "";
 	//性别
 	var a1 = $(doc).find(".lender-info").find("p").eq(0).text();
-	info = "性别："+a1;
+	info = a1;
 	//年龄
 	var a2 = $(doc).find(".lender-info").find("p").eq(1).text().replace(/[^，0-9]/ig, "");
 	info =info+ ">>>>>>年龄："+a2;
@@ -82,13 +84,12 @@ function excuct(doc,listingId){
 	}
 	
 
-	var condition0 = d1==0&&d2==0&&d0<12; //逾期必须为0和借款次数小于10
+	var condition0 = d1==0&&d2==0&&d0<12&&d0>1; //逾期必须为0和借款次数小于10
 	var condition1 = d3<3000001; //历史借款总额
 	var condition2 = d4<680001 || (c1&&d4<850001) || (c2&&d4<750001)  || (c3&&d4<750001) || d3/d4>3.5; //待还总额
-	var condition3 = c1||c2||c3||c4 || (d4<450001&&d4>0&&d0>0) ; //人行或学历认证或户籍认证
-	// var condition4 = sex||c1||(c2&&c3); //人行认证或女人
-	var condition5 = (a2>18&&a2<50)|| (c1&&a2<53) //年龄区间
-	// var condition6 = (sex&&a2>21&&a2<36)||!sex; //女人的年龄区间
+	// var condition3 = c1||c2||c3||c4; //人行或学历认证或户籍认证
+	var condition3 = c1||c2||c3||c4 || (d4<500001&&d4>0&&d0>1) ; //人行或学历认证或户籍认证
+	var condition5 = a2>19&&a2<50 //年龄区间
 	var condition7 = (d4/balance) < 250; //待还总额不能大于本次借款金额的3倍
 
 
@@ -113,7 +114,7 @@ function excuct(doc,listingId){
 
 
         arr = JSON.parse(localStorage.getItem("listingId"));
-		if(arr.length<20){
+		if(arr.length<300){
 			arr.push(listingId);
 		}else{
 			arr.splice(0,1);

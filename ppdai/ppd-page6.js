@@ -1,10 +1,10 @@
 var arr = [];
 
 if(location.href.indexOf("listnew")!=-1){
-	// localStorage.setItem("listingId", JSON.stringify(arr));
-	var page =1;
+	var page = 1;
 	setInterval(function(){
-		var url ="http://invest.ppdai.com/loan/listnew?LoanCategoryId=4&SortType=1&PageIndex="+page+"&CreditCodes=5%2C&Months=2%2C4%2C&MinAmount=1800&MaxAmount=6000";
+		// var url ="http://invest.ppdai.com/loan/listnew?LoanCategoryId=4&SortType=0&PageIndex="+page+"&CreditCodes=5%2C&Months=4%2C&MinAmount=2000&MaxAmount=6000";
+		var url ="http://invest.ppdai.com/loan/listnew?LoanCategoryId=4&SortType=0&PageIndex="+page+"&CreditCodes=5%2C&Months=2%2C&MinAmount=2000&MaxAmount=5200";
 		$.get(url,function(data){
 		  	var parser = new DOMParser();
 		    var doc=parser.parseFromString(data, "text/html");
@@ -22,10 +22,7 @@ if(location.href.indexOf("listnew")!=-1){
 
 		});
 		page++;
-		if(page>3){
-			page=1;
-		}
-	},7000);
+	},10000);
 
 }
 
@@ -44,22 +41,17 @@ function excuct(doc,listingId){
 
 	//统计信息
 	var d0 = $(doc).find(".lendDetailTab_tabContent").find(".tab-contain").eq(2).find(".num").eq(0).text().replace(/[^，0-9]/ig, "");//借款次数
-	var d01 = $(doc).find(".lendDetailTab_tabContent").find(".tab-contain").eq(2).find(".num").eq(4).text().replace(/[^，0-9]/ig, "");//正常还清次数
 	var d1 = $(doc).find(".lendDetailTab_tabContent").find(".tab-contain").eq(2).find(".num").eq(5).text().replace(/[^，0-9]/ig, "");//0-15天逾期
 	var d2 = $(doc).find(".lendDetailTab_tabContent").find(".tab-contain").eq(2).find(".num").eq(6).text().replace(/[^，0-9]/ig, "");//15天以上逾期
 	var d3 = $(doc).find(".lendDetailTab_tabContent").find(".tab-contain").eq(2).find(".num").eq(7).text().replace(/[^，0-9]/ig, "");//历史借款总额
 	var d4 = $(doc).find(".lendDetailTab_tabContent").find(".tab-contain").eq(2).find(".num").eq(8).text().replace(/[^，0-9]/ig, "");//待还总额
 
 
-	var h1 = $(doc).find(".lendDetailTab_tabContent_table1").find("tr").eq(1).find("td").eq(4).text().replace(/[^，0-9]/ig, "");
-
 	info = info+">>>>>>借款金额:"+balance;
 	info = info+">>>>>>借款次数:"+d0;
-	info = info+">>>>>>正常还清次数:"+d01;
 	info = info+">>>>>>逾期次数:"+d1+"和"+d2;
 	info = info+">>>>>>历史借款:"+d3/100;
 	info = info+">>>>>>历史待还:"+d4/100;
-	info = info+">>>>>>上次借款时间:"+h1;
 	info = info+">>>>>>认证情况："
 
 	var c1 =false;	//人行认证
@@ -92,13 +84,12 @@ function excuct(doc,listingId){
 	}
 	
 
-	var condition0 = d1==0&&d2==0; //逾期必须为0
-	var condition1 = d3<3000001||d3/d4>9; //历史借款总额
+	var condition0 = d1==0&&d2==0&&d0<12&&d0>1; //逾期必须为0和借款次数小于10
+	var condition1 = d3<3000001; //历史借款总额
 	var condition2 = d4<680001 || (c1&&d4<850001) || (c2&&d4<750001)  || (c3&&d4<750001) || d3/d4>3.5; //待还总额
-	var condition3 = c1||c2||c3||c4 || (d4<500001&&d4>0&&d0>1) ; //人行或学历认证或户籍认证
-	var condition4 = d0==1||d01/d0>1.9; //正常还清次数/除以借款总数大于2
+	// var condition3 = c1||c2||c3||c4; //人行或学历认证或户籍认证
+	var condition3 = c1||c2||c3||c4 || (d4<450001&&d4>0&&d0>1) ; //人行或学历认证或户籍认证
 	var condition5 = a2>19&&a2<50 //年龄区间
-	// var condition6 = (sex&&a2>21&&a2<36)||!sex; //女人的年龄区间
 	var condition7 = (d4/balance) < 250; //待还总额不能大于本次借款金额的3倍
 
 
@@ -106,25 +97,24 @@ function excuct(doc,listingId){
 		condition1&&
 		condition2&&
 		condition3&&
-		condition4&&
 		condition5&&
 		condition7){
 
 		// $(doc).find(".inputAmount").val(money);//购买金额100
 		// $(doc).find(".subBtn").click();
-		var money = 100; //购买金额
+		var money = 95; //购买金额
        	var code = $('#couponSelect').children('option:selected').val();
 	    var activityId =  $('#couponSelect').children('option:selected').attr("activityId");
 	    var couponAmount = $('#couponSelect').children('option:selected').attr("couponAmount");
 		console.log("决定购买:"+listingId);
 	    if(localStorage.getItem("listingId").indexOf(listingId)!=-1){
-	    	console.warn("已经买过了:"+listingId+"，不再购买");
+	    	console.log("已经买过了:"+listingId+"，不再购买");
 	    	return false;
 	    }
 
 
         arr = JSON.parse(localStorage.getItem("listingId"));
-		if(arr.length<500){
+		if(arr.length<300){
 			arr.push(listingId);
 		}else{
 			arr.splice(0,1);
@@ -144,7 +134,7 @@ function excuct(doc,listingId){
         };
 
         $.post("/Bid/Bid",data,function(e) {
-        	console.info(e.Message+":"+listingId);
+        		console.info(e.Message+listingId);
         	if(e.Message=='投标成功'){
 
         	}
